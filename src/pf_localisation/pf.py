@@ -36,22 +36,24 @@ class PFLocaliser(PFLocaliserBase):
         """
 
         particles = 100
-        i = 0
 
         ps = PoseArray()
 
-        while i != particles:
+        for i in range(particles):
             p = Pose()
             p.position.x = initialpose.pose.pose.position.x + \
                 random.normalvariate(0, 1)  # increase the variance
             p.position.y = initialpose.pose.pose.position.y + \
                 random.normalvariate(0, 1)
             p.position.z = initialpose.pose.pose.position.z
-            yaw = getHeading(initialpose.pose.pose.orientation) + \
-                random.normalvariate(0, 1)
-            p.orientation = rotateQuaternion(Quaternion(w=1.0), yaw)
-            ps.append(p)
-            i += 1
+
+            # p.orientation = rotateQuaternion(
+            #     initialpose.pose.pose.orientation, math.radians(random.normalvariate(0, 1))
+
+            p.orientation = rotateQuaternion(Quaternion(w=1), getHeading(
+                initialpose.pose.pose.orientation) + math.radians(random.normalvariate(0, 1)))
+
+            ps.poses.append(p)
 
         return ps
 
@@ -82,4 +84,30 @@ class PFLocaliser(PFLocaliserBase):
         :Return:
             | (geometry_msgs.msg.Pose) robot's estimated pose.
          """
-        pass
+
+        len_of_particles = len(self.particlecloud.poses)
+
+        sumX = 0
+        sumY = 0
+        sumZ = 0
+        sumOx = 0
+        sumOy = 0
+        sumOz = 0
+
+        for i in range(len_of_particles):
+            sumX += self.particlecloud.poses[i].position.x
+            sumY += self.particlecloud.poses[i].position.y
+            sumZ += self.particlecloud.poses[i].position.z
+            sumOx += self.particlecloud.poses[i].orientation.x
+            sumOy += self.particlecloud.poses[i].orientation.y
+            sumOz += self.particlecloud.poses[i].orientation.z
+
+        p = Pose()
+        p.position.x = sumX / len_of_particles
+        p.position.y = sumY / len_of_particles
+        p.position.z = sumZ / len_of_particles
+        p.orientation.x = sumOx / len_of_particles
+        p.orientation.y = sumOy / len_of_particles
+        p.orientation.z = sumOz / len_of_particles
+
+        return p
