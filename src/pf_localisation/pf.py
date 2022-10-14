@@ -1,3 +1,4 @@
+from typing_extensions import Self
 from geometry_msgs.msg import Pose, PoseArray, Quaternion
 from . pf_base import PFLocaliserBase
 import math
@@ -7,7 +8,6 @@ from . util import rotateQuaternion, getHeading
 from random import random
 
 from time import time
-
 
 class PFLocaliser(PFLocaliserBase):
 
@@ -60,10 +60,27 @@ class PFLocaliser(PFLocaliserBase):
         This should use the supplied laser scan to update the current
         particle cloud. i.e. self.particlecloud should be updated.
 
+        #initialise <particle, weight> combination as 
+        pwArray = []
+
+        //for each particle 1...m 
+            //sample a particle sample xt[m] ~ p(xt Z ut, xt-1[m])
+            // sampledparticle = TODO
+            
+            #w eight for particle m = p(z1 | xt[m]) 
+            weight = self.sensor_model.get_weight(scan, sampledParticle)
+            # tuple (particle, weight)
+            particleWeightTuple = (sampledParticle, weight)
+            # this: pwArray.append(particleWeightTuple)
+            # or this: self.particlecloud.poses.append((sampledParticle, weight))
+
         :Args:
             | scan (sensor_msgs.msg.LaserScan): laser scan to use for update
 
          """
+         
+         
+        
         pass
 
     def estimate_pose(self):
