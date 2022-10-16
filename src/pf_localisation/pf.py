@@ -39,22 +39,21 @@ class PFLocaliser(PFLocaliserBase):
         #a pose variable
         i = 0
         while i != self.M:
-            ps = PoseWithCovarianceStamped() 
+            ps = Pose() 
             #iterating over number of particles
             #Will likely need to increase the variance so that particles are better scattered
-            ps.pose.pose.position.x = initialpose.pose.pose.position.x + np.random.normal(0,1)
-            ps.pose.pose.position.y = initialpose.pose.pose.position.y + np.random.normal(0,1)
-            ps.pose.pose.position.z = initialpose.pose.pose.position.z + np.random.normal(0,1)
+            ps.position.x = initialpose.pose.pose.position.x + np.random.normal(0,1)
+            ps.position.y = initialpose.pose.pose.position.y + np.random.normal(0,1)
+            ps.position.z = initialpose.pose.pose.position.z + np.random.normal(0,1)
             yaw = getHeading(initialpose.pose.pose.orientation) 
             #get the yaw from the current orientation framework using getHeading()
-            ps.pose.pose.orientation = rotateQuaternion(Quaternion(w=1.0), yaw)
+            ps.orientation = rotateQuaternion(Quaternion(w=1.0), yaw)
             #Append new particle to the particle cloud PC
             PC.poses.append(ps)
             #update expression
             i += 1
         #end of while loop
         #return particle cloud
-        print(PC.poses[1].pose.pose)
         return PC
  
     
@@ -72,7 +71,6 @@ class PFLocaliser(PFLocaliserBase):
         particularly, get_weight()
 
         '''
-        print("running update_particle_cloud")
         W = [] #array of weights (doubles returned by get_weight())
         PS_ = PoseArray() #To store resampled particles
 
@@ -81,16 +79,13 @@ class PFLocaliser(PFLocaliserBase):
             #iterating over particles
             #In this loop we want to procure weights for each particle
             #and append W
-            w = self.sensor_model.get_weight(scan, self.particlecloud.poses[i].pose.pose)
-            print("Weight for particle ", i, " is ", w)
+            w = self.sensor_model.get_weight(scan, self.particlecloud.poses[i])
             W.append(w)
 
         # Step 2: Resampling particles
 
         # Step 2.1: Cumulative Distribution
         C = [0] # Represent cdf as an array
-        print("W is ", W)
-        print("C is ", C)
 
         C[0] = W[0] # c_1 = w_1
         for i in range(1, self.M):
@@ -100,7 +95,6 @@ class PFLocaliser(PFLocaliserBase):
         # Step 2.2: 
         u = np.random.uniform(0, (1/self.M)) #our threshold drawn from unifrom distr.
         i = 1
-        print("PS_ is ", PS_)
 
         for j in range(0,self.M):
             while u > C[i]:
@@ -132,7 +126,6 @@ class PFLocaliser(PFLocaliserBase):
             | (geometry_msgs.msg.Pose) robot's estimated pose.
         """
 
-        print("running estimate_pose")
         #Implementing average for now
         #We can discuss and try clustering later
         estimate = Pose() 
@@ -142,15 +135,15 @@ class PFLocaliser(PFLocaliserBase):
         s_yaw = 0
 
         for i in range(0,self.M):
-            s_x += self.particlecloud.poses[i].pose.pose.position.x
-            s_y += self.particlecloud.poses[i].pose.pose.position.y
-            s_z += self.particlecloud.poses[i].pose.pose.position.z
-            s_yaw += getHeading(self.particlecloud.poses[i].pose.pose.orientation)
+            s_x += self.particlecloud.poses[i].position.x
+            s_y += self.particlecloud.poses[i].position.y
+            s_z += self.particlecloud.poses[i].position.z
+            s_yaw += getHeading(self.particlecloud.poses[i].orientation)
 
 
         estimate.position.x = s_x/self.M
         estimate.position.y = s_y/self.M
-        estimate.position.z = s_z/self.M
+        estimate.position.z = 1
         estimate.orientation = rotateQuaternion(Quaternion(w=1.0), s_yaw/self.M)
 
         return estimate
