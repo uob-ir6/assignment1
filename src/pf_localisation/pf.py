@@ -16,7 +16,7 @@ class PFLocaliser(PFLocaliserBase):
         super(PFLocaliser, self).__init__()
         
         # ----- Set motion model parameters
-        self.M = 100 #number of particles, will vary and document results
+        self.M = 5 #number of particles, will vary and document results
         # ----- Sensor model parameters
         self.NUMBER_PREDICTED_READINGS = 20     # Number of readings to predict
         
@@ -36,11 +36,10 @@ class PFLocaliser(PFLocaliserBase):
             | (geometry_msgs.msg.PoseArray) poses of the particles
         """
         PC = PoseArray() #particle cloud
-        poses = []
-        ps = PoseWithCovarianceStamped() #a pose variable
+        #a pose variable
         i = 0
         while i != self.M:
-
+            ps = PoseWithCovarianceStamped() 
             #iterating over number of particles
             #Will likely need to increase the variance so that particles are better scattered
             ps.pose.pose.position.x = initialpose.pose.pose.position.x + np.random.normal(0,1)
@@ -50,13 +49,11 @@ class PFLocaliser(PFLocaliserBase):
             #get the yaw from the current orientation framework using getHeading()
             ps.pose.pose.orientation = rotateQuaternion(Quaternion(w=1.0), yaw)
             #Append new particle to the particle cloud PC
-            poses.append(ps)
+            PC.poses.append(ps)
             #update expression
             i += 1
         #end of while loop
         #return particle cloud
-
-        PC.poses = poses
 
         return PC
  
