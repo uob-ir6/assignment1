@@ -16,7 +16,7 @@ class PFLocaliser(PFLocaliserBase):
         super(PFLocaliser, self).__init__()
         
         # ----- Set motion model parameters
-        self.M = 5 #number of particles, will vary and document results
+        self.M = 50 #number of particles, will vary and document results
         # ----- Sensor model parameters
         self.NUMBER_PREDICTED_READINGS = 20     # Number of readings to predict
         
@@ -143,7 +143,7 @@ class PFLocaliser(PFLocaliserBase):
 
         estimate.position.x = s_x/self.M
         estimate.position.y = s_y/self.M
-        estimate.position.z = 1
+        estimate.position.z = s_z/self.M
         estimate.orientation = rotateQuaternion(Quaternion(w=1.0), s_yaw/self.M)
 
         return estimate
