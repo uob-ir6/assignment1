@@ -1,8 +1,8 @@
-from geometry_msgs.msg import Pose, PoseArray, Quaternion
+from geometry_msgs.msg import Pose, PoseArray, Quaternion, PoseWithCovarianceStamped
 from . pf_base import PFLocaliserBase
 import math
 import rospy
-
+import numpy as np
 from . util import rotateQuaternion, getHeading
 from random import random
 
@@ -36,24 +36,29 @@ class PFLocaliser(PFLocaliserBase):
             | (geometry_msgs.msg.PoseArray) poses of the particles
         """
         PC = PoseArray() #particle cloud
+        poses = []
         ps = PoseWithCovarianceStamped() #a pose variable
         i = 0
         while i != self.M:
+
             #iterating over number of particles
             #Will likely need to increase the variance so that particles are better scattered
-            ps.pose.pose.position.x = initialpose.pose.pose.x + random.normal(0,1)
-            ps.pose.pose.position.y = initialpose.pose.pose.y + random.normal(0,1)
-            ps.pose.pose.position.z = initialpose.pose.pose.z + random.normal(0,1)
+            ps.pose.pose.position.x = initialpose.pose.pose.position.x + np.random.normal(0,1)
+            ps.pose.pose.position.y = initialpose.pose.pose.position.y + np.random.normal(0,1)
+            ps.pose.pose.position.z = initialpose.pose.pose.position.z + np.random.normal(0,1)
             yaw = getHeading(initialpose.pose.pose.orientation) 
             #get the yaw from the current orientation framework using getHeading()
             ps.pose.pose.orientation = rotateQuaternion(Quaternion(w=1.0), yaw)
             #Append new particle to the particle cloud PC
-            PC.append(ps)
+            poses.append(ps)
             #update expression
             i += 1
         #end of while loop
         #return particle cloud
-        return PS
+
+        PC.poses = poses
+
+        return PC
  
     
     def update_particle_cloud(self, scan):
@@ -71,7 +76,7 @@ class PFLocaliser(PFLocaliserBase):
 
         '''
         W = [] #array of weights (doubles returned by get_weight())
-        PS_ = PoseArray[] #To store resampled particles
+        PS_ = PoseArray() #To store resampled particles
 
         # Step 1: Procuring Weights for each sample
         for i in range(0,self.M): 
@@ -94,12 +99,12 @@ class PFLocaliser(PFLocaliserBase):
         u = np.random.uniform(0, (1/self.M)) #our threshold drawn from unifrom distr.
         i = 1
         for j in range(0,self.M):
-            while u > c[i]:
+            while u > C[i]:
                 i += 1
             # If we have reached the next thresholds
             PS_[j] = self.particlecloud[i] 
             #Update u
-            u += double(1/M)
+            u += 1/self.M
 
         #update our particle cloud
         self.particlecloud = PS_
