@@ -66,7 +66,16 @@ class PFLocaliser(PFLocaliserBase):
             | scan (sensor_msgs.msg.LaserScan): laser scan to use for update
 
          """
-        pass
+
+        updatedPoseArray = PoseArray()
+
+        # Each particle weight percentage
+        weight = []
+        for i in range(len(self.particlecloud.poses)):
+            weight.append(self.sensor_model.get_weight(
+                scan, self.particlecloud.poses[i]))
+
+        self.particlecloud = updatedPoseArray
 
     def estimate_pose(self):
         """
