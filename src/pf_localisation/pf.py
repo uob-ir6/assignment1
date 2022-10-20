@@ -7,6 +7,7 @@ from geometry_msgs.msg import Pose, PoseArray, Quaternion, PoseWithCovarianceSta
 from . pf_base import PFLocaliserBase
 import math
 import rospy
+import numpy as np
 
 from . util import rotateQuaternion, getHeading
 
@@ -22,6 +23,8 @@ class PFLocaliser(PFLocaliserBase):
         # ----- Set motion model parameters
 
         # ----- Sensor model parameters
+        self.M = 50
+
         self.NUMBER_PREDICTED_READINGS = 10     # Number of readings to predict
         
        
