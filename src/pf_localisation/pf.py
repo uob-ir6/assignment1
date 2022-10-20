@@ -139,6 +139,57 @@ class PFLocaliser(PFLocaliserBase):
         print("============================================")
         print("sum weights: ", sum(weights)/numofParticles)
 
+
+ 
+        '''
+        #Scatter the particles otherwise we will have too many particles of same value
+        for i in range(0, 20):
+        	p = Pose()
+        	p.position.x = np.random.uniform(self.estimatedpose.pose.pose.position.x-10, self.estimatedpose.pose.pose.position.x+10)
+        	p.position.y = np.random.uniform(self.estimatedpose.pose.pose.position.y-10, self.estimatedpose.pose.pose.position.y+10)
+        	p.position.z = 0
+        	p.orientation = rotateQuaternion(Quaternion(w=1.0), math.radians(np.random.uniform(0, 360)))
+        	PS.poses.append(p)
+        for i in range(20,self.M):
+            varP = Pose()
+            varP.position.x = gauss(PS_[i].position.x, 0.2)
+            varP.position.y = gauss(PS_[i].position.y, 0.2)
+            varP.position.z = 0
+            yaw = getHeading(PS_[i].orientation)
+            varP.orientation = rotateQuaternion(PS_[i].orientation, math.radians(gauss(yaw, 5)))
+            PS.poses.append(varP)
+            
+
+
+        if (scatterIndex % 10 == 0): # Scatter the particles every 10 iterations.
+            for i in range(int(len(PS.poses) * 0.01)): # 5% scatter particles
+                randX = gauss(self.estimatedpose.pose.pose.position.x, 15)
+                randY = gauss(self.estimatedpose.pose.pose.position.y, 15)
+                for i in range(3):
+                    scatterPose = Pose()
+                    scatterPose.position.x = gauss(randX, 0.1)
+                    scatterPose.position.y = gauss(randY, 0.1)
+                    q_orig = [0,0,0,1]
+                    q_orig_msg = Quaternion(q_orig[0], q_orig[1], q_orig[2], q_orig[3])
+                    scatterPose.orientation = rotateQuaternion(q_orig_msg, math.radians(np.random.uniform(0, 360)))
+                    PS.poses.pop(random.randrange(self.M))
+                    PS.poses.append(scatterPose)
+            scatterIndex = scatterIndex + 1
+        
+            
+        
+        for i in range(0, 20):
+        	p = Pose()
+        	p.position.x = np.random.uniform(self.estimatedpose.pose.pose.position.x-10, self.estimatedpose.pose.pose.position.x+10)
+        	p.position.y = np.random.uniform(self.estimatedpose.pose.pose.position.y-10, self.estimatedpose.pose.pose.position.y+10)
+        	p.position.z = 0
+        	p.orientation = rotateQuaternion(Quaternion(w=1.0), math.radians(np.random.uniform(0, 360)))
+        	PS.poses.append(p)
+        	self.M += 1
+        self.particlecloud = PS
+        '''
+
+
         scatterConstant = 0.05
         #Scatter the particles
         if (scatterIndex % 10 == 0): # Scatter the particles every 10 iterations.
